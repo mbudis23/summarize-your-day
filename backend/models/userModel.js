@@ -17,4 +17,28 @@ const userSchema = new mongoose.Schema({
     timestamps: true
 });
 
+userSchema.pre('save', function (next) {
+    const user = this;
+
+    // Jika tidak ada laporan, lanjutkan proses penyimpanan
+    if (!user._reports || user._reports.length === 0) {
+        return next();
+    }
+
+    // Set untuk mengecek duplikasi tanggal
+    const dateSet = new Set();
+
+    for (const report of user._reports) {
+        if (report._date) {
+            const dateStr = report._date.toISOString();
+            if (dateSet.has(dateStr)) {
+                return next(new Error('Duplicate report date found'));
+            }
+            dateSet.add(dateStr);
+        }
+    }
+
+    next();
+});
+
 module.exports = mongoose.model('User', userSchema);

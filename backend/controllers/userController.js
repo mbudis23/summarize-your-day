@@ -72,3 +72,33 @@ exports.logout = (req, res) => {
     res.clearCookie('token');
     res.json({ message: 'Logout successful' });
 };
+
+exports.addReport = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { _date, _rate, _summarize } = req.body;
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const reportExists = user._reports.some(report => report._date.toISOString() === new Date(_date).toISOString());
+
+        if (reportExists) {
+            return res.status(400).json({ message: 'Report with this date already exists' });
+        }
+
+        user._reports.push({
+            _date,
+            _rate,
+            _summarize
+        });
+
+        await user.save();
+        res.status(201).json({ message: 'Report added successfully'});
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
