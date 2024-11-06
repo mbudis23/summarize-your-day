@@ -134,25 +134,25 @@ exports.editReport = async (req, res) => {
     }
 };
 
-// exports.getAllReports = async (req, res) => {
-//     try {
-//         const userId = req.userId; // Mendapatkan userId dari middleware
+exports.getAllReports = async (req, res) => {
+    try {
+        const userId = req.userId; // Mendapatkan userId dari middleware
 
-//         // Cari user berdasarkan userId dan ambil hanya field _reports
-//         const user = await User.findById(userId).select('_reports');
+        // Cari user berdasarkan userId dan ambil hanya field _reports
+        const user = await User.findById(userId).select('_reports');
 
-//         if (!user) {
-//             return res.status(404).json({ message: 'User not found' });
-//         }
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
-//         // Urutkan _reports berdasarkan _date dalam urutan descending
-//         const sortedReports = user._reports.sort((a, b) => new Date(b._date) - new Date(a._date));
+        // Urutkan _reports berdasarkan _date dalam urutan descending
+        const sortedReports = user._reports.sort((a, b) => new Date(b._date) - new Date(a._date));
 
-//         res.json({ reports: sortedReports });
-//     } catch (error) {
-//         res.status(500).json({ message: error.message });
-//     }
-// };
+        res.json({ reports: sortedReports });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
 // exports.getReportById = async (req, res) => {
 //     try {

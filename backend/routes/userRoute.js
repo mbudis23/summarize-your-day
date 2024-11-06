@@ -8,6 +8,6 @@ router.post('/login', login);
 router.post('/logout', verifyToken, logout);
 router.post('/', verifyToken, addReport);
 router.put('/:reportId', verifyToken, editReport);
-// router.get('/', verifyToken, getAllReports);
+router.get('/', verifyToken, getAllReports);
 
 module.exports = router;
