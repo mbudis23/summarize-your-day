@@ -102,3 +102,79 @@ exports.addReport = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+exports.editReport = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { reportId } = req.params; 
+        const { _rate, _summarize } = req.body;
+
+        const user = await User.findOne({ _id: userId, "_reports._id": reportId });
+        
+        if (!user) {
+            return res.status(404).json({ message: 'User or report not found' });
+        }
+
+        const report = user._reports.id(reportId);
+        
+        if (!report) {
+            return res.status(404).json({ message: 'Report not found' });
+        }
+
+        // if (_date) report._date = _date;
+        if (_rate) report._rate = _rate;
+        if (_summarize) report._summarize = _summarize;
+        report._updated_at = Date.now();
+
+        await user.save();
+
+        res.json({ message: 'Report updated successfully', report });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// exports.getAllReports = async (req, res) => {
+//     try {
+//         const userId = req.userId; // Mendapatkan userId dari middleware
+
+//         // Cari user berdasarkan userId dan ambil hanya field _reports
+//         const user = await User.findById(userId).select('_reports');
+
+//         if (!user) {
+//             return res.status(404).json({ message: 'User not found' });
+//         }
+
+//         // Urutkan _reports berdasarkan _date dalam urutan descending
+//         const sortedReports = user._reports.sort((a, b) => new Date(b._date) - new Date(a._date));
+
+//         res.json({ reports: sortedReports });
+//     } catch (error) {
+//         res.status(500).json({ message: error.message });
+//     }
+// };
+
+// exports.getReportById = async (req, res) => {
+//     try {
+//         const userId = req.userId; // Mendapatkan userId dari middleware
+//         const { reportId } = req.params; // Mendapatkan reportId dari parameter URL
+
+//         // Cari user berdasarkan userId dan report berdasarkan reportId
+//         const user = await User.findOne({ _id: userId, "_reports._id": reportId });
+
+//         if (!user) {
+//             return res.status(404).json({ message: 'User or report not found' });
+//         }
+
+//         // Temukan report di dalam array _reports
+//         const report = user._reports.id(reportId);
+
+//         if (!report) {
+//             return res.status(404).json({ message: 'Report not found' });
+//         }
+
+//         res.json({ report });
+//     } catch (error) {
+//         res.status(500).json({ message: error.message });
+//     }
+// };
