@@ -136,16 +136,13 @@ exports.editReport = async (req, res) => {
 
 exports.getAllReports = async (req, res) => {
     try {
-        const userId = req.userId; // Mendapatkan userId dari middleware
-
-        // Cari user berdasarkan userId dan ambil hanya field _reports
+        const userId = req.userId;
         const user = await User.findById(userId).select('_reports');
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Urutkan _reports berdasarkan _date dalam urutan descending
         const sortedReports = user._reports.sort((a, b) => new Date(b._date) - new Date(a._date));
 
         res.json({ reports: sortedReports });
@@ -154,27 +151,25 @@ exports.getAllReports = async (req, res) => {
     }
 };
 
-// exports.getReportById = async (req, res) => {
-//     try {
-//         const userId = req.userId; // Mendapatkan userId dari middleware
-//         const { reportId } = req.params; // Mendapatkan reportId dari parameter URL
+exports.getReportById = async (req, res) => {
+    try {
+        const userId = req.userId;
+        const { reportId } = req.params;
 
-//         // Cari user berdasarkan userId dan report berdasarkan reportId
-//         const user = await User.findOne({ _id: userId, "_reports._id": reportId });
+        const user = await User.findOne({ _id: userId, "_reports._id": reportId });
 
-//         if (!user) {
-//             return res.status(404).json({ message: 'User or report not found' });
-//         }
+        if (!user) {
+            return res.status(404).json({ message: 'User or report not found' });
+        }
 
-//         // Temukan report di dalam array _reports
-//         const report = user._reports.id(reportId);
+        const report = user._reports.id(reportId);
 
-//         if (!report) {
-//             return res.status(404).json({ message: 'Report not found' });
-//         }
+        if (!report) {
+            return res.status(404).json({ message: 'Report not found' });
+        }
 
-//         res.json({ report });
-//     } catch (error) {
-//         res.status(500).json({ message: error.message });
-//     }
-// };
+        res.json({ report });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
