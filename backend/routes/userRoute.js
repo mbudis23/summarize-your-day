@@ -1,5 +1,5 @@
 const express = require('express');
-const { register, login, logout, addReport, editReport, getAllReports, getReportById } = require('../controllers/userController');
+const { register, login, logout, addReport, editReport, getAllReports, getReportById, deleteReportById } = require('../controllers/userController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 const router = express.Router();
 
@@ -10,5 +10,6 @@ router.post('/', verifyToken, addReport);
 router.put('/:reportId', verifyToken, editReport);
 router.get('/', verifyToken, getAllReports);
 router.get('/:reportId', verifyToken, getReportById);
+router.delete('/:reportId', verifyToken, deleteReportById);
 
 module.exports = router;

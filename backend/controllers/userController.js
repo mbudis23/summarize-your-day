@@ -173,3 +173,28 @@ exports.getReportById = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+exports.deleteReportById = async (req, res) => {
+    try {
+        const userId = req.userId; 
+        const { reportId } = req.params;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const reportIndex = user._reports.findIndex(report => report._id.toString() === reportId);
+        if (reportIndex === -1) {
+            return res.status(404).json({ message: 'Report not found' });
+        }
+
+        user._reports.splice(reportIndex, 1);
+
+        await user.save();
+
+        res.json({ message: 'Report deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
