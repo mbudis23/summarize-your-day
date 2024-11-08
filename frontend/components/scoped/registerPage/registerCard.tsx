@@ -10,6 +10,9 @@ export default function RegisterCard(){
             >
                 Registration
             </h1>
+            <p className="text-center font-light text-red-500">
+                {"\u00A0"}
+            </p>
             <form className="flex flex-col gap-[16px]">
                 <div className="flex flex-col gap-[8px]">
                     <input
@@ -29,7 +32,7 @@ export default function RegisterCard(){
                     />
                 </div>
                 <div className="flex justify-end">
-                    <button className="bg-black rounded-[4px] text-white py-[2px] px-[8px]">Register</button>
+                    <button className="bg-black rounded-[4px] text-white py-[2px] px-[8px]">REGISTER</button>
                 </div>
             </form>
             <p className="text-center font-light text-red-500">
