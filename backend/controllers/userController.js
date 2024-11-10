@@ -4,31 +4,22 @@ const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
     try {
-        console.log("Register endpoint hit");  // Debug log
-        const { _username, _email, _password } = req.body;
-        console.log("Received data:", { _username, _email, _password });  // Debug log
+        const { username, email, password } = req.body;
 
-        // Cek apakah email sudah terdaftar
-        const existingUser = await User.findOne({ _email });
+        const existingUser = await User.findOne({ email });
         if (existingUser) {
-            console.log("Email already in use:", _email);
             return res.status(400).json({ message: 'Email already in use' });
         }
 
-        // Hash password
-        const hashedPassword = await bcrypt.hash(_password, 10);
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Buat user baru
         const newUser = new User({
-            _username,
-            _email,
-            _password: hashedPassword
+            username,
+            email,
+            password: hashedPassword
         });
 
-        // Simpan user ke database
         await newUser.save();
-
-        console.log("User registered successfully:", _username);
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
         console.error("Error in register function:", error);
@@ -38,35 +29,30 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
     try {
-        const { _email, _password } = req.body;
+        const { email, password } = req.body;
 
-        // Cari user berdasarkan email
-        const user = await User.findOne({ _email });
+        const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Verifikasi password
-        const isMatch = await bcrypt.compare(_password, user._password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid password' });
+            return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        // Buat JWT
         const token = jwt.sign(
-            { id: user._id, username: user._username },
+            { id: user._id, username: user.username },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' } // Atur waktu kadaluarsa token sesuai kebutuhan
+            { expiresIn: '1h' }
         );
 
-        // Set cookie dengan JWT
         res.cookie('token', token, {
-            httpOnly: false,      // Mencegah akses dari JavaScript di sisi klien
-            secure: process.env.NODE_ENV === 'production', // Cookie hanya dikirim melalui HTTPS di produksi
-            maxAge: 3600000      // 1 jam dalam milidetik
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            maxAge: 3600000
         });
 
-        // Kirim respons ke klien
         res.json({ message: 'Login successful' });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -80,8 +66,8 @@ exports.logout = (req, res) => {
 
 exports.addReport = async (req, res) => {
     try {
-        const userId = req.userId;
-        const { _date, _rate, _summarize } = req.body;
+        const userId = req.userId; // Ensure this is correctly populated, perhaps from a middleware that authenticates the token
+        const { date, rate, summarize } = req.body;
 
         const user = await User.findById(userId);
 
@@ -89,20 +75,20 @@ exports.addReport = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const reportExists = user._reports.some(report => report._date.toISOString() === new Date(_date).toISOString());
+        const reportExists = user.reports.some(report => report.date.toISOString().substring(0, 10) === new Date(date).toISOString().substring(0, 10));
 
         if (reportExists) {
             return res.status(400).json({ message: 'Report with this date already exists' });
         }
 
-        user._reports.push({
-            _date,
-            _rate,
-            _summarize
+        user.reports.push({
+            date,
+            rate,
+            summarize
         });
 
         await user.save();
-        res.status(201).json({ message: 'Report added successfully'});
+        res.status(201).json({ message: 'Report added successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -112,27 +98,25 @@ exports.editReport = async (req, res) => {
     try {
         const userId = req.userId;
         const { reportId } = req.params; 
-        const { _rate, _summarize } = req.body;
+        const { rate, summarize } = req.body;
 
-        const user = await User.findOne({ _id: userId, "_reports._id": reportId });
+        const user = await User.findOne({ _id: userId, "reports._id": reportId });
         
         if (!user) {
             return res.status(404).json({ message: 'User or report not found' });
         }
 
-        const report = user._reports.id(reportId);
+        const report = user.reports.id(reportId);
         
         if (!report) {
             return res.status(404).json({ message: 'Report not found' });
         }
 
-        // if (_date) report._date = _date;
-        if (_rate) report._rate = _rate;
-        if (_summarize) report._summarize = _summarize;
-        report._updated_at = Date.now();
+        if (rate) report.rate = rate;
+        if (summarize) report.summarize = summarize;
+        report.updatedAt = Date.now();
 
         await user.save();
-
         res.json({ message: 'Report updated successfully', report });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -142,13 +126,13 @@ exports.editReport = async (req, res) => {
 exports.getAllReports = async (req, res) => {
     try {
         const userId = req.userId;
-        const user = await User.findById(userId).select('_reports');
+        const user = await User.findById(userId).select('reports');
 
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const sortedReports = user._reports.sort((a, b) => new Date(b._date) - new Date(a._date));
+        const sortedReports = user.reports.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         res.json({ reports: sortedReports });
     } catch (error) {
@@ -161,13 +145,13 @@ exports.getReportById = async (req, res) => {
         const userId = req.userId;
         const { reportId } = req.params;
 
-        const user = await User.findOne({ _id: userId, "_reports._id": reportId });
+        const user = await User.findOne({ _id: userId, "reports._id": reportId });
 
         if (!user) {
             return res.status(404).json({ message: 'User or report not found' });
         }
 
-        const report = user._reports.id(reportId);
+        const report = user.reports.id(reportId);
 
         if (!report) {
             return res.status(404).json({ message: 'Report not found' });
@@ -181,7 +165,7 @@ exports.getReportById = async (req, res) => {
 
 exports.deleteReportById = async (req, res) => {
     try {
-        const userId = req.userId; 
+        const userId = req.userId;
         const { reportId } = req.params;
         const user = await User.findById(userId);
 
@@ -189,15 +173,14 @@ exports.deleteReportById = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const reportIndex = user._reports.findIndex(report => report._id.toString() === reportId);
+        const reportIndex = user.reports.findIndex(report => report._id.toString() === reportId);
         if (reportIndex === -1) {
             return res.status(404).json({ message: 'Report not found' });
         }
 
-        user._reports.splice(reportIndex, 1);
+        user.reports.splice(reportIndex, 1);
 
         await user.save();
-
         res.json({ message: 'Report deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: error.message });

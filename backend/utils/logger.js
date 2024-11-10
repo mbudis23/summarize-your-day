@@ -1,10 +1,12 @@
 const logRequest = (req, res, next) => {
-    const start = Date.now();
+    const start = Date.now();  // Capture the start time of the request
+
     res.on('finish', () => {
-        const duration = Date.now() - start;
-        console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`);
+        const duration = Date.now() - start;  // Calculate the duration of the request
+        console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} from ${req.ip} - Status: ${res.statusCode} - ${duration}ms`);
     });
-    next();
+
+    next();  // Continue to the next middleware
 };
 
 module.exports = logRequest;
