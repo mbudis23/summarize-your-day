@@ -9,7 +9,7 @@ const reportSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
-    _username: { type: String, required: true, unique: true },
+    _username: { type: String, required: true },
     _email: { type: String, required: true, unique: true },
     _password: { type: String, required: true },
     _reports: [reportSchema]

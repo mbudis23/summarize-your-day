@@ -4,11 +4,14 @@ const jwt = require('jsonwebtoken');
 
 exports.register = async (req, res) => {
     try {
+        console.log("Register endpoint hit");  // Debug log
         const { _username, _email, _password } = req.body;
+        console.log("Received data:", { _username, _email, _password });  // Debug log
 
         // Cek apakah email sudah terdaftar
         const existingUser = await User.findOne({ _email });
         if (existingUser) {
+            console.log("Email already in use:", _email);
             return res.status(400).json({ message: 'Email already in use' });
         }
 
@@ -25,8 +28,10 @@ exports.register = async (req, res) => {
         // Simpan user ke database
         await newUser.save();
 
+        console.log("User registered successfully:", _username);
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
+        console.error("Error in register function:", error);
         res.status(500).json({ message: error.message });
     }
 };
