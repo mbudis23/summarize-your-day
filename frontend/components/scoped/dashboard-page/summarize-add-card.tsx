@@ -4,10 +4,14 @@ import { AiOutlineClose } from "react-icons/ai";
 import Cookies from 'js-cookie';
 
 function getCookie(name) {
-    const nameEQ = name + "=";
-    const regex = new RegExp(`(?:(?:^|.*;\\s*)${nameEQ}\\s*\\=\\s*([^;]*).*$)|^.*$`);
-    const cookieValue = document.cookie.replace(regex, "$1");
-    return cookieValue ? decodeURIComponent(cookieValue) : null;
+    const nameEQ = name + "="; // Menambahkan '=' untuk memastikan pencocokan yang tepat
+    const ca = document.cookie.split(';'); // Memisahkan string cookie menjadi array berdasarkan ';'
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1); // Menghapus spasi di awal jika ada
+        if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length)); // Jika nama cookie cocok, kembalikan nilainya
+    }
+    return null; // Kembalikan null jika tidak ada cookie dengan nama tersebut
 }
 
 export default function SummarizeAddCard({ closeFunction }) {
@@ -28,7 +32,7 @@ export default function SummarizeAddCard({ closeFunction }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        
+        alert(getCookie('token'))
         
 
         if (!token) {
