@@ -26,7 +26,7 @@ app.use(logRequest);
 
 // CORS setup
 app.use(cors({
-    origin: '*',               // Adjust this as needed for security in production
+    origin: 'http://localhost:3000',               // Adjust this as needed for security in production
     credentials: true,         // This might not be functional with origin set to '*'
 }));
 

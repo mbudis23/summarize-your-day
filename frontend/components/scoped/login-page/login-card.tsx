@@ -24,13 +24,17 @@ export default function LoginCard() {
         e.preventDefault();
         setLoading(true);
         setErrorMessage("\u00A0");
+    
         try {
-            const response = await axios.post('http://localhost:5000/api/users/login', formData);
+            const response = await axios.post('http://localhost:5000/api/users/login', formData, {
+                withCredentials: true // Ensures cookies such as session IDs are sent with the request
+            });
             console.log('Login success:', response.data.message);
             router.push('/dashboard');  // Redirect to dashboard or appropriate route
-        } catch (error: any) {
+        } catch (error) {
             if (axios.isAxiosError(error)) {
                 console.error('Error during login:', error);
+                // Properly handle error data
                 setErrorMessage(error.response?.data?.message || 'Login failed, please try again');
             } else {
                 console.error('Unknown error during login:', error);
